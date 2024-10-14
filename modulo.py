@@ -21,7 +21,7 @@ class Envio():
     def __str__(self):
         
         forma_pago = ["Efectivo", "Tarjeta de credito"]
-        origen = ["Argentina", "Brasil", "Bolivia", "Chile" "Paraguay"]
+        origen = ["Argentina", "Brasil", "Bolivia", "Chile", "Paraguay"]
         
         return f"CP: {self.cp}, Direccion: {self.direccion}, Tipo envio: {self.tipo}, Forma de pago: {forma_pago[self.pago - 1]}"
     
@@ -34,7 +34,7 @@ def menu(op):
     print("3- Mostrar los datos")
     print("4- Buscar envios con un CP determinado")
     print("5- Buscar envios con una dirección determinada")
-    print("6- C")
+    print("6- Mostrar la cantidad de envios según su tipo y forma de pago")
     
     op = int(input("Ingrese la opción que desee: "))
     
@@ -201,3 +201,32 @@ def busqueda_direccion(bfd):
         #Si no se encuentra nada devolvemos esto
         if not encontrado_direccion:
             print(f"No existe ninguna direccion igual a igual a {direccion}")
+            
+# #Ejercicio 6
+def contador_envios(bfd):
+    
+    #En el caso que no exista el archvico nos avisa
+    if not os.path.exists(bfd):
+        print(f"El archivo {bfd} no existe")
+        
+    else:
+        #Creamos la matriz de 2 x 7
+        matriz = [[0] * 7 for f in range(2)]
+        
+        with open(bfd, "rb") as m:
+            
+            #Asignamos a t el tamaño del archivo binario
+            t = os.path.getsize(bfd)
+            
+            #Recorremos el archivo binario
+            while m.tell() < t:
+                data = pickle.load(m)
+
+                #En cada vuelta del bucle agregamos el envio
+                matriz[data.pago - 1][data.tipo] += 1
+
+            #Recorremos la matriz para mostrar la cantidad de envios mayores a 0
+            for f in range(len(matriz)):
+                for c in range (len(matriz[f])):
+                    if matriz[f][c] != 0:
+                        print(f"Tipo de envio: {c}, forma de pago: {f+1}, cantidad total: {matriz[f][c]}")

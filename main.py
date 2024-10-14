@@ -30,7 +30,7 @@ def main():
             busqueda_direccion(bfd)
             
         elif op == 6:
-            pass
+            contador_envios(bfd)
         
         elif op == 7:
             pass
