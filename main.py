@@ -3,6 +3,10 @@ from modulo import*
 
 def main():
     
+    #Definimos los archivos que vamos a trabajar
+    bfd = "archivo.bin"
+    fd = "envios-tp4.csv"
+    
     vector = []
     op = -1
     
@@ -11,13 +15,28 @@ def main():
         op = menu(op)
         
         if op == 1: 
-            cargar_datos()
+            cargar_datos(fd, bfd)
             
         elif op == 2:
             cargar_datos_manual()
         
         elif op == 3:
-            leer_datos()
+            leer_datos(bfd)
+        
+        elif op == 4:
+            busqueda_cp(bfd)
+            
+        elif op == 5:
+            busqueda_direccion(bfd)
+            
+        elif op == 6:
+            pass
+        
+        elif op == 7:
+            pass
+        
+        elif op == 8:
+            pass
             
         elif op == 0:
             print("___________________________________")
