@@ -1,10 +1,13 @@
 #Trabajo Practico AED número 4
-#Grupo 
+
+#Grupo TP4-G109
+
 #Integrantes:
 # 415594 - Esteban Fernando Carrizo
 # 409641 - Rubial Benjamin Álvaro
 # 409177 - Jañez Juan Martín
-# 415537 - Scheggia pedro 
+# 415537 - Scheggia Pedro
+# 413580 - Infante Lopez Santiago
 
 import pickle
 import os
@@ -21,24 +24,65 @@ class Envio():
     def __str__(self):
         
         forma_pago = ["Efectivo", "Tarjeta de credito"]
-        origen = ["Argentina", "Brasil", "Bolivia", "Chile", "Paraguay"]
+        origen = country(self.cp)
         
-        return f"CP: {self.cp}, Direccion: {self.direccion}, Tipo envio: {self.tipo}, Forma de pago: {forma_pago[self.pago - 1]}"
+        return f"CP: {self.cp}, Destino: {origen}, Direccion: {self.direccion}, Tipo envio: {self.tipo}, Forma de pago: {forma_pago[self.pago - 1]}"
     
 #Menu de opciones
 def menu(op):
     
-    print("--Menu de opciones--")
-    print("1- Crear archivo binario con datos del archivo envios-tp4.csv")
-    print("2- Cargar un envio")
-    print("3- Mostrar los datos")
-    print("4- Buscar envios con un CP determinado")
-    print("5- Buscar envios con una dirección determinada")
-    print("6- Mostrar la cantidad de envios según su tipo y forma de pago")
+    print("\n--Menu de opciones--\n")
+    print("1- Crear archivo binario con datos del archivo envios-tp4.csv.")
+    print("2- Cargar un envio.")
+    print("3- Mostrar los datos.")
+    print("4- Buscar envios con un CP determinado.")
+    print("5- Buscar envios con una dirección determinada.")
+    print("6- Mostrar la cantidad de envios según su tipo y forma de pago.")
+    print("7- Mostrar la cantidad de envios por cada tipo de envio posible.")
+    print("8- Mostrar los datos que estan por encima del promedio ordenados de menor a mayor.")
     
     op = int(input("Ingrese la opción que desee: "))
     
     return op
+
+#Validador de destino
+def country(cp):
+    n = len(cp)
+    if n < 4 or n > 9:
+        return 'Otro'
+
+    # ¿es Argentina?
+    if n == 8:
+        if cp[0].isalpha() and cp[0] not in 'IO' and cp[1:5].isdigit() and cp[5:8].isalpha():
+            return 'Argentina'
+        else:
+            return 'Otro'
+
+    # ¿es Brasil?
+    if n == 9:
+        if cp[0:5].isdigit() and cp[5] == '-' and cp[6:9].isdigit():
+            return 'Brasil'
+        else:
+            return 'Otro'
+
+    if cp.isdigit():
+        # ¿es Bolivia?
+        if n == 4:
+            return 'Bolivia'
+
+        # ¿es Chile?
+        if n == 7:
+            return 'Chile'
+
+        # ¿es Paraguay?
+        if n == 6:
+            return 'Paraguay'
+        # ¿es Uruguay?
+        if n == 5:
+            return 'Uruguay'
+
+    # ...si nada fue cierto, entonces sea lo que sea, es otro...
+    return 'Otro'
 
 #Ejercicio 1
 #Cargamos los datos de un archivo de texto
@@ -119,7 +163,6 @@ def cargar_datos_manual():
         
         #Grabamos en bfile la linea
         pickle.dump(linea, bfile)
-            
     
 #Ejercicio 3                
 #Funcion para leer datos 
@@ -136,7 +179,6 @@ def leer_datos(bfd):
         while m.tell() < t:
             data = pickle.load(m)
             print(data)
-
 
 #Ejercicio 4
 #Buscador de CP
@@ -168,7 +210,6 @@ def busqueda_cp(bfd):
         #Si no se encuentra nada devolvemos esto
         if not encontrado_cp:
             print(f"No existe ningun CP igual a {cp}")
-            
 
 #Ejercicio 5
 #Buscador de Direccion
@@ -212,7 +253,7 @@ def contador_envios(bfd):
     else:
         #Creamos la matriz de 2 x 7
         matriz = [[0] * 7 for f in range(2)]
-        
+
         with open(bfd, "rb") as m:
             
             #Asignamos a t el tamaño del archivo binario
@@ -228,5 +269,111 @@ def contador_envios(bfd):
             #Recorremos la matriz para mostrar la cantidad de envios mayores a 0
             for f in range(len(matriz)):
                 for c in range (len(matriz[f])):
-                    if matriz[f][c] != 0:
+                    if matriz[f][c] > 0:
                         print(f"Tipo de envio: {c}, forma de pago: {f+1}, cantidad total: {matriz[f][c]}")
+        return matriz
+
+#Ejercicio 7
+#Funcion de totalizar por filas
+def totalizar_por_filas(matriz):
+    print("Cantidades por tipo de envío:")
+    for f in range(len(matriz[0])):  # Se asume que el índice de tipo de envío es la columna
+        cont = 0
+        for c in range(len(matriz)):
+            cont += int(matriz[c][f])  # Ahora se acumula por columnas
+        print(f"Para el tipo de envío {f} se han realizado {cont} pagos")
+
+#Funcion de totalizar por filas
+def totalizar_por_columnas(matriz):
+    print("Cantidades por tipo de pago:")
+    for c in range(len(matriz)):
+        cont = 0
+        for f in range(len(matriz[c])):
+            cont += int(matriz[c][f])
+        print(f"Para el tipo de pago {c+1} se han realizado {cont} envíos")
+
+#Calculamos el promedio de los envios
+def promedio(bfd):
+    
+    cantidad_de_envios = 0
+    importes_total = 0
+    t = os.path.getsize(bfd)
+    
+    with open(bfd, "rb") as bfd:
+    
+        while bfd.tell() < t:
+            linea = pickle.load(bfd)
+            cantidad_de_envios +=1
+            importes_total += final_amount(linea.cp,country(linea.cp),int(linea.tipo),int(linea.pago))
+        bfd.close()
+        prom = importes_total / cantidad_de_envios
+        
+    return prom
+
+def crear_v(v, prom ,bfd):
+    size = os.path.getsize(bfd)
+    binario = open(bfd, "rb")
+    while binario.tell() < size:
+        linea = pickle.load(binario)
+        pago = final_amount(linea.cp, country(linea.cp), int(linea.tipo), int(linea.pago))
+        if pago > prom:
+            v.append(linea)
+    binario.close()
+    return v
+
+#Metodo de ordenamiento para ejercicio 8
+def shell_sort(v):
+    n = len(v)
+    h = 1
+    while h <= n // 9:
+        h = 3*h + 1
+
+    while h > 0:
+        for j in range(h, n):
+            y = v[j]
+            k = j - h
+            while k >= 0 and y.cp < v[k].cp:
+                v[k+h] = v[k]
+                k -= h
+            v[k+h] = y
+        h //= 3
+
+#Calculamos el monto final para el ejercicio 8
+def final_amount(cp, destino, tipo, pago):
+    # determinación del importe inicial a pagar.
+    importes = (1100, 1800, 2450, 8300, 10900, 14300, 17900)
+    monto = importes[tipo]
+
+    if destino == 'Argentina':
+        inicial = monto
+    else:
+        if destino == 'Bolivia' or destino == 'Paraguay' or (destino == 'Uruguay' and cp[0] == '1'):
+            inicial = int(monto * 1.20)
+        elif destino == 'Chile' or (destino == 'Uruguay' and cp[0] != '1'):
+            inicial = int(monto * 1.25)
+        elif destino == 'Brasil':
+            if cp[0] == '8' or cp[0] == '9':
+                inicial = int(monto * 1.20)
+            else:
+                if cp[0] == '0' or cp[0] == '1' or cp[0] == '2' or cp[0] == '3':
+                    inicial = int(monto * 1.25)
+                else:
+                    inicial = int(monto * 1.30)
+        else:
+            inicial = int(monto * 1.50)
+
+    # determinación del valor final del ticket a pagar.
+    # asumimos que es pago en tarjeta...
+    final = inicial
+
+    # ... y si no lo fuese, la siguiente será cierta y cambiará el valor...
+    if pago == 1:
+        final = int(0.9 * inicial)
+
+    return final
+
+def mostrar_registros(v):
+
+    for envio in v:
+        pais = country(envio.cp)
+        print(f"{envio}")

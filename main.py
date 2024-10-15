@@ -7,7 +7,9 @@ def main():
     bfd = "archivo.bin"
     fd = "envios-tp4.csv"
     
-    vector = []
+    v = []
+    matriz = []
+    
     op = -1
     
     while op != 0:
@@ -30,14 +32,25 @@ def main():
             busqueda_direccion(bfd)
             
         elif op == 6:
-            contador_envios(bfd)
+            matriz = contador_envios(bfd)
         
         elif op == 7:
-            pass
+            if len(matriz) == 0:
+                print("La matriz esta vacia")
+            else:
+                totalizar_por_filas(matriz)
+                totalizar_por_columnas(matriz)
         
         elif op == 8:
-            pass
-            
+            if not os.path.exists(bfd):
+                print(f"El archivo {bfd} no existe.")
+                
+            else:
+                prom = promedio(bfd)
+                v = crear_v(v, prom, bfd)
+                shell_sort(v)
+                mostrar_registros(v)
+                
         elif op == 0:
             print("___________________________________")
             print("________Programa finalizado________")
